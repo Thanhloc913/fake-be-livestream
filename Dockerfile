@@ -25,5 +25,5 @@ RUN ./mvnw clean package -DskipTests
 # Expose port 8080
 EXPOSE 8080
 
-# Run the application
-CMD ["java", "-jar", "target/demo-0.0.1-SNAPSHOT.jar"]
+# Run the application with profile from environment variable (default: test)
+CMD ["sh", "-c", "java -jar -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:-test} target/demo-0.0.1-SNAPSHOT.jar"]
