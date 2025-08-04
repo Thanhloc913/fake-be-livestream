@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: livestream_postgres
+    environment:
+      POSTGRES_DB: livestream_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - livestream_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: livestream_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - livestream_network
+
+  backend:
+    build: .
+    container_name: livestream_backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/livestream_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      JWT_SECRET: mySecretKey123456789012345678901234567890123456789012345678901234567890
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - livestream_network
+    volumes:
+      - .:/app
+    working_dir: /app
+
+volumes:
+  postgres_data:
+
+networks:
+  livestream_network:
+    driver: bridge
